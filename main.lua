@@ -102,7 +102,7 @@ function love.mousereleased()
 end
 
 function love.update(dt)
-   local f = 500 * dt
+   local f = 600 * dt
    local k = love.keyboard.isDown
    local kd = false
    if k('up') then player.body:applyForce(0, -f) ; kd = true end
@@ -116,5 +116,16 @@ function love.update(dt)
       player.body:setLinearDamping(10)
    end
 
+   max_speed(player.body, 300)
+
    world:update(dt)
+end
+
+function max_speed(body, spd)
+   local x, y = body:getLinearVelocity()
+   if x*x + y*y > spd*spd then
+      local a = math.atan2(y,x)
+      body:setLinearVelocity(spd * math.cos(a),
+                             spd * math.sin(a))
+   end
 end
