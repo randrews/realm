@@ -9,6 +9,11 @@ function new(x,y)
    return setmetatable(tbl, instance)
 end
 
+north = new(0, -1) ; up = north
+south = new(0, 1) ; down = south
+west = new(-1, 0) ; left = west
+east = new(1, 0) ; right = east
+
 local mt = getmetatable(_M)
 mt.__call=function(t,x,y)
              return t.new(x,y)
@@ -40,11 +45,22 @@ function methods:adjacent(pt2)
 end
 
 function instance.__add(pt1, pt2)
+   assert(pt1 and pt2)
    return new(pt1.x+pt2.x, pt1.y+pt2.y)
 end
 
 function instance.__sub(pt1, pt2)
+   assert(pt1 and pt2)
    return new(pt1.x-pt2.x, pt1.y-pt2.y)
+end
+
+function instance.__mul(pt1, pt2)
+   assert(pt1 and pt2)
+   if type(pt2) == 'number' then
+      return new(pt1.x * pt2, pt1.y * pt2)
+   else
+      return new(pt1.x*pt2.x, pt1.y*pt2.y)
+   end
 end
 
 methods.translate = instance.__add

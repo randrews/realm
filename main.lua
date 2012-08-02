@@ -83,6 +83,18 @@ function love.draw()
    g.setColor(64, 120, 64)
    g.rectangle('fill', 0, 0, level.width*32, level.height*32)
 
+   if player.location then
+      g.setColor(255,255,255)
+      local l = player.location * 32
+      g.rectangle('line', l.x, l.y, 32, 32)
+
+      if player.direction then
+         g.setColor(255,0,0)
+         local t = (player.location + player.direction) * 32
+         g.rectangle('line', t.x, t.y, 32, 32)
+      end
+   end
+
    g.setColor(160, 64, 64)
    g.circle('fill',
             player.body:getX(), player.body:getY(), 16)
@@ -102,22 +114,28 @@ function love.mousereleased()
 end
 
 function love.update(dt)
-   local f = 600 * dt
+   local f = 1500 * dt
    local k = love.keyboard.isDown
-   local kd = false
-   if k('up') then player.body:applyForce(0, -f) ; kd = true end
-   if k('down') then player.body:applyForce(0, f) ; kd = true end
-   if k('left') then player.body:applyForce(-f, 0) ; kd = true end
-   if k('right') then player.body:applyForce(f, 0) ; kd = true end
+   local kd = 0
+   local dir = nil
 
-   if kd then
-      player.body:setLinearDamping(0.1)
+   if k('up') then player.body:applyForce(0, -f) ; dir = point.up ; kd = kd + 1 end
+   if k('down') then player.body:applyForce(0, f) ; dir = point.down ; kd = kd + 1 end
+   if k('left') then player.body:applyForce(-f, 0) ; dir = point.left ; kd = kd + 1 end
+   if k('right') then player.body:applyForce(f, 0) ; dir = point.right ; kd = kd + 1 end
+
+   if kd > 0 then
+      player.body:setLinearDamping(0.25)
    else
-      player.body:setLinearDamping(10)
+      player.body:setLinearDamping(15)
    end
 
-   max_speed(player.body, 300)
+   if kd == 1 then player.direction = dir end
+   player.location = point(
+      math.floor(player.body:getX() / 32),
+      math.floor(player.body:getY() / 32))
 
+   max_speed(player.body, 300)
    world:update(dt)
 end
 
