@@ -2,7 +2,7 @@ module(..., package.seeall)
 
 local point = require('point')
 
-local methods = {}
+methods = {}
 
 function new(w, h)
    local tbl = {

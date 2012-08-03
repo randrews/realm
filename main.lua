@@ -1,6 +1,6 @@
 assert(love, "Run this inside Love")
 
-local Map = require('map')
+local Level = require('level')
 local point = require('point')
 
 local world = nil
@@ -8,7 +8,7 @@ local world = nil
 local edge = nil
 local player = nil
 
-local level = Map.new_from_strings{
+local level = Level.new{
    "..........######.........",
    "..........#..............",
    "..........#.#............",
@@ -23,6 +23,7 @@ local level = Map.new_from_strings{
    "...#...#...#........#....",
    ".....#...#...............",
    ".........................",
+   ".........................",
    "........................."
 }
 
@@ -31,50 +32,10 @@ function love.load()
 
    love.physics.setMeter(32)
    world = love.physics.newWorld(0, 0)
-   edge = makeEdges(world,
-                    0, 0,
-                    level.width*32, level.height*32)
 
-   makeWalls(world, level, 32)
-   player = makePlayer(world)
-end
-
-function makeEdges(world, x, y, w, h)
-   local edge = {}
-   edge.body = love.physics.newBody(world, 0, 0, 'static')
-   edge.shapes = {}
-   table.insert(edge.shapes, love.physics.newEdgeShape(x, y, x+w, y))
-   table.insert(edge.shapes, love.physics.newEdgeShape(x, y, x, y+h))
-   table.insert(edge.shapes, love.physics.newEdgeShape(x+w, y+h, x+w, y))
-   table.insert(edge.shapes, love.physics.newEdgeShape(x+w, y+h, x, y+h))
-   for _, s in ipairs(edge.shapes) do love.physics.newFixture(edge.body, s) end
-   return edge
-end
-
-function makeWalls(world, level, size)
-   local ph = love.physics
-   size = size or 32
-   local walls = ph.newBody(world, 0, 0, 'static')
-
-   for p in level:each() do
-      if level(p) == '#' then
-         local s = ph.newRectangleShape(p.x*size + size/2, p.y*size + size/2,
-                                        size, size)
-         ph.newFixture(walls, s)
-      end
-   end
-end
-
-function makePlayer(world)
-   local player = {}
-   local ph = love.physics
-
-   player.body = ph.newBody(world, 32, 32, 'dynamic')
-   player.shape = ph.newCircleShape(10)
-   ph.newFixture(player.body, player.shape)
-
-   player.body:setMass(0.01)
-   return player
+   edge = level:makeEdges(world)
+   level:makeWalls(world)
+   player = level:makePlayer(world)
 end
 
 function love.draw()
@@ -130,10 +91,26 @@ function love.update(dt)
       player.body:setLinearDamping(15)
    end
 
-   if kd == 1 then player.direction = dir end
    player.location = point(
       math.floor(player.body:getX() / 32),
       math.floor(player.body:getY() / 32))
+
+   if kd == 1 then
+      player.direction = dir
+      local acc = 25
+
+      if player.direction.y == 0 then -- horizontal
+         local y = player.body:getY()-16
+         local ty = player.location.y * 32
+         local f = dt * acc * (ty - y)
+         player.body:applyForce(0, f)
+      else -- vertical
+         local x = player.body:getX()-16
+         local tx = player.location.x * 32
+         local f = dt * acc * (tx - x)
+         player.body:applyForce(f, 0)
+      end
+   end
 
    max_speed(player.body, 300)
    world:update(dt)
