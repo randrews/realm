@@ -121,7 +121,7 @@ function methods:draw()
 end
 
 function methods:update(dt)
-   local f = 300 * dt
+   local f =  dt
    local k = love.keyboard.isDown
    local kd = 0
    local dir = nil
@@ -145,9 +145,11 @@ function methods:update(dt)
 
    if kd == 1 then
       p.direction = dir
-      self:nudgeToSquare(p.body, p.location + p.direction, dt)
-   elseif kd == 0 then
-      self:nudgeToSquare(p.body, p.location, dt)
+      p.target = p.location + p.direction
+   end
+
+   if p.target then
+      self:nudgeToSquare(p.body, p.target, dt)
    end
 
    for _, c in ipairs(self.crates) do
@@ -162,7 +164,7 @@ function methods:update(dt)
 end
 
 function methods:nudgeToSquare(body, sq, dt)
-   local acc = 25
+   local acc = 50
 
    local y = body:getY() - SIZE/2
    local ty = sq.y * SIZE
