@@ -120,10 +120,9 @@ function methods:draw()
    end
 end
 
-function methods:update(dt)
-   local f = 1200*dt
+function methods:update(dt) 
    local k = love.keyboard.isDown
-   local kd = 0
+   local kd = 0 -- num of keys down
    local dir = point(0, 0)
 
    local p = self.player
@@ -151,32 +150,35 @@ function methods:update(dt)
       p.target = p.location + dir
    end
 
+   self.accel = self.accel or 0
+
+   if kd == 0 then self.accel = 1
+   elseif self.accel < 3 then self.accel = self.accel + 3*dt end
+
    if p.target then
-      self:nudgeToSquare(p.body, p.target, dt)
+      self:nudgeToSquare(p.body, p.target, dt * self.accel * 10)
    end
 
    for _, c in ipairs(self.crates) do
       local sq = point(
          math.floor(c.body:getX() / SIZE),
          math.floor(c.body:getY() / SIZE))
-      self:nudgeToSquare(c.body, sq, dt)
+      self:nudgeToSquare(c.body, sq, dt * 5)
    end
 
    self:max_speed(p.body, 300)
    self.world:update(dt)
 end
 
-function methods:nudgeToSquare(body, sq, dt)
-   local acc = 30
-
+function methods:nudgeToSquare(body, sq, acc)
    local y = body:getY() - SIZE/2
    local ty = sq.y * SIZE
-   local f = dt * acc * (ty - y)
+   local f = acc * (ty - y)
    body:applyForce(0, f)
 
    local x = body:getX() - SIZE/2
    local tx = sq.x * SIZE
-   local f = dt * acc * (tx - x)
+   local f = acc * (tx - x)
    body:applyForce(f, 0)
 end
 
