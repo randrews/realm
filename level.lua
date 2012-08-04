@@ -121,17 +121,17 @@ function methods:draw()
 end
 
 function methods:update(dt)
-   local f =  dt
+   local f = 1200*dt
    local k = love.keyboard.isDown
    local kd = 0
-   local dir = nil
+   local dir = point(0, 0)
 
    local p = self.player
 
-   if k('up') then p.body:applyForce(0, -f) ; dir = point.up ; kd = kd + 1 end
-   if k('down') then p.body:applyForce(0, f) ; dir = point.down ; kd = kd + 1 end
-   if k('left') then p.body:applyForce(-f, 0) ; dir = point.left ; kd = kd + 1 end
-   if k('right') then p.body:applyForce(f, 0) ; dir = point.right ; kd = kd + 1 end
+   if k('up') then dir = dir + point.up ; kd = kd + 1 end
+   if k('down') then dir = dir + point.down ; kd = kd + 1 end
+   if k('left') then dir = dir + point.left ; kd = kd + 1 end
+   if k('right') then dir = dir + point.right ; kd = kd + 1 end
 
    if kd > 0 then
       p.body:setLinearDamping(0.25)
@@ -145,7 +145,10 @@ function methods:update(dt)
 
    if kd == 1 then
       p.direction = dir
-      p.target = p.location + p.direction
+   end
+
+   if kd > 0 then
+      p.target = p.location + dir
    end
 
    if p.target then
@@ -164,7 +167,7 @@ function methods:update(dt)
 end
 
 function methods:nudgeToSquare(body, sq, dt)
-   local acc = 50
+   local acc = 30
 
    local y = body:getY() - SIZE/2
    local ty = sq.y * SIZE
