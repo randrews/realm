@@ -78,7 +78,7 @@ function methods:makePlayer()
    player.shape = ph.newCircleShape(10)
    ph.newFixture(player.body, player.shape)
 
-   player.body:setMass(0.01)
+   player.body:setMass(1)
    return player
 end
 
@@ -133,10 +133,13 @@ function methods:update(dt)
    if k('right') then dir = dir + point.right ; kd = kd + 1 end
 
    if kd > 0 then
-      p.body:setLinearDamping(0.25)
+      p.body:setLinearDamping(0)
    else
-      p.body:setLinearDamping(15)
+      p.body:setLinearDamping(SIZE /2)
    end
+
+   local f = dir * SIZE * 15
+   self.player.body:applyForce(f())
 
    p.location = point(
       math.floor(p.body:getX() / SIZE),
@@ -144,19 +147,11 @@ function methods:update(dt)
 
    if kd == 1 then
       p.direction = dir
+      self:dampenSidewaysVelocity(p.body, p.direction)
    end
 
    if kd > 0 then
       p.target = p.location + dir
-   end
-
-   self.accel = self.accel or 0
-
-   if kd == 0 then self.accel = 1
-   elseif self.accel < 3 then self.accel = self.accel + 3*dt end
-
-   if p.target then
-      self:nudgeToSquare(p.body, p.target, dt * self.accel * 10)
    end
 
    for _, c in ipairs(self.crates) do
@@ -166,7 +161,7 @@ function methods:update(dt)
       self:nudgeToSquare(c.body, sq, dt * 5)
    end
 
-   self:max_speed(p.body, 300)
+   self:max_speed(p.body, SIZE * 10)
    self.world:update(dt)
 end
 
@@ -180,6 +175,16 @@ function methods:nudgeToSquare(body, sq, acc)
    local tx = sq.x * SIZE
    local f = acc * (tx - x)
    body:applyForce(f, 0)
+end
+
+function methods:dampenSidewaysVelocity(body, dir)
+   local a = 0.9
+   local v = point(body:getLinearVelocity())
+
+   if dir.y == 0 then v.y = v.y * a end
+   if dir.x == 0 then v.x = v.x * a end
+
+   body:setLinearVelocity(v())
 end
 
 function methods:max_speed(body, spd)
