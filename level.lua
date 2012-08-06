@@ -48,8 +48,8 @@ function methods:makeCrates()
          local s = ph.newRectangleShape(0, 0,
                                         SIZE, SIZE)
 
-         b:setMass(0.02)
-         b:setLinearDamping(1)
+         b:setMass(5)
+         b:setLinearDamping(SIZE / 2)
          b:setFixedRotation(true)
          ph.newFixture(b, s)
          table.insert(self.crates, {body=b, shape=s})
@@ -158,7 +158,7 @@ function methods:update(dt)
       local sq = point(
          math.floor(c.body:getX() / SIZE),
          math.floor(c.body:getY() / SIZE))
-      self:nudgeToSquare(c.body, sq, dt * 5)
+      self:nudgeToSquare(c.body, sq, SIZE)
    end
 
    self:max_speed(p.body, SIZE * 10)
