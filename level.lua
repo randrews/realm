@@ -17,7 +17,20 @@ function methods:init()
    self:makeEdges()
    self:makeWalls()
    self:makeCrates()
+   self:makeGems()
+   self.world:setCallbacks(function(...) self.contact(self, ...) end)
    self.player = self:makePlayer()
+end
+
+function methods:contact(a, b)
+   print("Contact between " .. self:type(a) .. " and " .. self:type(b))
+end
+
+function methods:type(fixture)
+   assert(fixture)
+   local u = fixture:getUserData()
+   if u then return u.type end
+   return 'unknown'
 end
 
 function methods:makeEdges()
@@ -31,7 +44,10 @@ function methods:makeEdges()
    table.insert(edge.shapes, love.physics.newEdgeShape(0, 0, 0, h))
    table.insert(edge.shapes, love.physics.newEdgeShape(w, h, w, 0))
    table.insert(edge.shapes, love.physics.newEdgeShape(w, h, 0, h))
-   for _, s in ipairs(edge.shapes) do love.physics.newFixture(edge.body, s) end
+   for _, s in ipairs(edge.shapes) do
+      local f = love.physics.newFixture(edge.body, s)
+      f:setUserData{body=edge.body, shape=s, type='edge'}
+   end
    return edge
 end
 
@@ -45,16 +61,39 @@ function methods:makeCrates()
                               p.x*SIZE + SIZE/2,
                               p.y*SIZE + SIZE/2,
                               'dynamic')
-         local s = ph.newRectangleShape(0, 0,
-                                        SIZE, SIZE)
+         local s = ph.newRectangleShape(0, 0, SIZE, SIZE)
 
          b:setMass(5)
          b:setLinearDamping(SIZE / 2)
          b:setFixedRotation(true)
-         ph.newFixture(b, s)
-         table.insert(self.crates, {body=b, shape=s})
+         local f = ph.newFixture(b, s)
+         f:setUserData{body=b, shape=s, type='crate'}
+         table.insert(self.crates, f:getUserData())
       end
    end         
+end
+
+function methods:makeGems()
+   local ph = love.physics
+
+   self.gems = {}
+
+   for p in self:each() do
+      if self(p) == '*' then
+         local b = ph.newBody(self.world,
+                              p.x*SIZE + SIZE/2,
+                              p.y*SIZE + SIZE/2,
+                              'dynamic')
+         local s = ph.newRectangleShape(0, 0, SIZE/2, SIZE/2)
+
+         b:setAngle(math.pi/4)
+         local f = ph.newFixture(b, s)
+         f:setUserData{body=b, shape=s, type='gem'}
+         f:setSensor(true)
+         b:applyTorque(150)
+         table.insert(self.gems, f:getUserData())
+      end
+   end
 end
 
 function methods:makeWalls()
@@ -65,20 +104,22 @@ function methods:makeWalls()
       if self(p) == '#' then
          local s = ph.newRectangleShape(p.x*SIZE + SIZE/2, p.y*SIZE + SIZE/2,
                                         SIZE, SIZE)
-         ph.newFixture(walls, s)
+         local f = ph.newFixture(walls, s)
+         f:setUserData{body=walls, shape=s, type='wall'}
       end
    end
 end
 
 function methods:makePlayer()
-   local player = {}
+   local player = {type='player'}
    local ph = love.physics
 
    player.body = ph.newBody(self.world, SIZE*1.5, SIZE*1.5, 'dynamic')
    player.shape = ph.newCircleShape(10)
-   ph.newFixture(player.body, player.shape)
-
+   local f = ph.newFixture(player.body, player.shape)
+   f:setUserData(player)
    player.body:setMass(1)
+
    return player
 end
 
@@ -88,18 +129,6 @@ function methods:draw()
    -- Draw ground
    g.setColor(64, 120, 64)
    g.rectangle('fill', 0, 0, self.width*SIZE, self.height*SIZE)
-
-   -- if player.location then
-   --    g.setColor(255,255,255)
-   --    local l = player.location * SIZE
-   --    g.rectangle('line', l.x, l.y, SIZE, SIZE)
-
-   --    if player.direction then
-   --       g.setColor(255,0,0)
-   --       local t = (player.location + player.direction) * SIZE
-   --       g.rectangle('line', t.x, t.y, SIZE, SIZE)
-   --    end
-   -- end
 
    -- Draw player
    g.setColor(160, 64, 64)
@@ -112,6 +141,16 @@ function methods:draw()
       if self(p) == '#' then
          g.rectangle('fill', p.x*SIZE, p.y*SIZE, SIZE, SIZE)
       end
+   end
+
+   -- Draw gems
+   g.setColor(190, 190, 30)
+   for _, gem in ipairs(self.gems) do
+      g.push()
+      g.translate(gem.body:getX(), gem.body:getY())
+      g.rotate(gem.body:getAngle())
+      g.rectangle('fill', -SIZE/4, -SIZE/4, SIZE/2, SIZE/2)
+      g.pop()
    end
 
    g.setColor(180, 120, 90)
