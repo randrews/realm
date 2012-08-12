@@ -1,6 +1,7 @@
 module(..., package.seeall)
 
 local Map = require('map')
+local EntityManager = require('entity_manager')
 
 methods = setmetatable({}, {__index=Map.methods})
 local SIZE = 32
@@ -14,23 +15,18 @@ end
 
 function methods:init()
    self.world = love.physics.newWorld(0, 0)
+   self.manager = EntityManager.new(self.world)
+
    self:makeEdges()
    self:makeWalls()
    self:makeCrates()
    self:makeGems()
-   self.world:setCallbacks(function(...) self.contact(self, ...) end)
    self.player = self:makePlayer()
-end
 
-function methods:contact(a, b)
-   print("Contact between " .. self:type(a) .. " and " .. self:type(b))
-end
-
-function methods:type(fixture)
-   assert(fixture)
-   local u = fixture:getUserData()
-   if u then return u.type end
-   return 'unknown'
+   self.manager:handler('gem', 'player',
+                        function(gem, player)
+                           print(player.type .. ' got a gem!')
+                        end)
 end
 
 function methods:makeEdges()
@@ -45,15 +41,12 @@ function methods:makeEdges()
    table.insert(edge.shapes, love.physics.newEdgeShape(w, h, w, 0))
    table.insert(edge.shapes, love.physics.newEdgeShape(w, h, 0, h))
    for _, s in ipairs(edge.shapes) do
-      local f = love.physics.newFixture(edge.body, s)
-      f:setUserData{body=edge.body, shape=s, type='edge'}
+      self.manager:add(edge.body, s, 'edge')
    end
-   return edge
 end
 
 function methods:makeCrates()
    local ph = love.physics
-   self.crates = {}
 
    for p in self:each() do
       if self(p) == 'o' then
@@ -66,17 +59,13 @@ function methods:makeCrates()
          b:setMass(5)
          b:setLinearDamping(SIZE / 2)
          b:setFixedRotation(true)
-         local f = ph.newFixture(b, s)
-         f:setUserData{body=b, shape=s, type='crate'}
-         table.insert(self.crates, f:getUserData())
+         self.manager:add(b, s, 'crate')
       end
    end         
 end
 
 function methods:makeGems()
    local ph = love.physics
-
-   self.gems = {}
 
    for p in self:each() do
       if self(p) == '*' then
@@ -87,11 +76,10 @@ function methods:makeGems()
          local s = ph.newRectangleShape(0, 0, SIZE/2, SIZE/2)
 
          b:setAngle(math.pi/4)
-         local f = ph.newFixture(b, s)
-         f:setUserData{body=b, shape=s, type='gem'}
-         f:setSensor(true)
          b:applyTorque(150)
-         table.insert(self.gems, f:getUserData())
+
+         local f = self.manager:add(b, s, 'gem')
+         f:setSensor(true)
       end
    end
 end
@@ -104,21 +92,17 @@ function methods:makeWalls()
       if self(p) == '#' then
          local s = ph.newRectangleShape(p.x*SIZE + SIZE/2, p.y*SIZE + SIZE/2,
                                         SIZE, SIZE)
-         local f = ph.newFixture(walls, s)
-         f:setUserData{body=walls, shape=s, type='wall'}
+         self.manager:add(walls, s, 'wall')
       end
    end
 end
 
 function methods:makePlayer()
-   local player = {type='player'}
-   local ph = love.physics
+   local b = love.physics.newBody(self.world, SIZE*1.5, SIZE*1.5, 'dynamic')
+   b:setMass(1)
+   local s = love.physics.newCircleShape(10)
 
-   player.body = ph.newBody(self.world, SIZE*1.5, SIZE*1.5, 'dynamic')
-   player.shape = ph.newCircleShape(10)
-   local f = ph.newFixture(player.body, player.shape)
-   f:setUserData(player)
-   player.body:setMass(1)
+   local fix, player = self.manager:add(b, s, 'player')
 
    return player
 end
@@ -145,7 +129,7 @@ function methods:draw()
 
    -- Draw gems
    g.setColor(190, 190, 30)
-   for _, gem in ipairs(self.gems) do
+   for _, gem in ipairs(self.manager:find('gem')) do
       g.push()
       g.translate(gem.body:getX(), gem.body:getY())
       g.rotate(gem.body:getAngle())
@@ -154,7 +138,7 @@ function methods:draw()
    end
 
    g.setColor(180, 120, 90)
-   for _, c in ipairs(self.crates) do
+   for _, c in ipairs(self.manager:find('crate')) do
       g.rectangle('fill', c.body:getX()-SIZE/2, c.body:getY()-SIZE/2, SIZE, SIZE)
    end
 end
@@ -193,7 +177,7 @@ function methods:update(dt)
       p.target = p.location + dir
    end
 
-   for _, c in ipairs(self.crates) do
+   for _, c in ipairs(self.manager:find('crate')) do
       local sq = point(
          math.floor(c.body:getX() / SIZE),
          math.floor(c.body:getY() / SIZE))
