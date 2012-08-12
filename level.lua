@@ -16,7 +16,7 @@ function methods:init()
    self.world = love.physics.newWorld(0, 0)
    self:makeEdges()
    self:makeWalls()
-   self:makeCrates(world)
+   self:makeCrates()
    self.player = self:makePlayer()
 end
 
@@ -135,7 +135,7 @@ function methods:update(dt)
    if kd > 0 then
       p.body:setLinearDamping(0)
    else
-      p.body:setLinearDamping(SIZE /2)
+      p.body:setLinearDamping(8)
    end
 
    local f = dir * SIZE * 15
@@ -147,7 +147,7 @@ function methods:update(dt)
 
    if kd == 1 then
       p.direction = dir
-      self:dampenSidewaysVelocity(p.body, p.direction)
+      self:dampenSidewaysVelocity(p.body, p.direction, dt)
    end
 
    if kd > 0 then
@@ -177,9 +177,10 @@ function methods:nudgeToSquare(body, sq, acc)
    body:applyForce(f, 0)
 end
 
-function methods:dampenSidewaysVelocity(body, dir)
-   local a = 0.9
+function methods:dampenSidewaysVelocity(body, dir, dt)
    local v = point(body:getLinearVelocity())
+   local a = 1 - 8 * dt
+   if a > 1.0 then a = 1.0 elseif a < 0 then a = 0 end
 
    if dir.y == 0 then v.y = v.y * a end
    if dir.x == 0 then v.x = v.x * a end
