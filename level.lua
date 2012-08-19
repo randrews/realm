@@ -27,6 +27,14 @@ function methods:init()
                         function(gem, player)
                            print(player.type .. ' got a gem!')
                         end)
+
+   self.manager:handler('gem', 'crate',
+                        function(gem, crate)
+                           local f = SIZE * 15
+                           local dx = crate.body:getX() - gem.body:getX()
+                           local dy = crate.body:getY() - gem.body:getY()
+                           crate.body:applyForce(f*dx, f*dy)
+                        end)
 end
 
 function methods:makeEdges()
