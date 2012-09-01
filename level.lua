@@ -2,6 +2,7 @@ module(..., package.seeall)
 
 local Map = require('map')
 local EntityManager = require('entity_manager')
+local EffectManager = require('effect_manager')
 
 methods = setmetatable({}, {__index=Map.methods})
 local SIZE = 32
@@ -16,6 +17,7 @@ end
 function methods:init()
    self.world = love.physics.newWorld(0, 0)
    self.manager = EntityManager.new(self.world)
+   self.effect_manager = EffectManager.new()
 
    self:makeEdges()
    self:makeWalls()
@@ -27,6 +29,7 @@ function methods:init()
                         function(gem, player)
                            print(player.type .. ' got a gem!')
                            self.manager:remove(gem)
+                           self.effect_manager:add(EffectManager.puff(gem.body:getX(), gem.body:getY(), gem.body:getAngle()))
                         end)
 
    self.manager:handler('gem', 'crate',
@@ -150,6 +153,8 @@ function methods:draw()
    for _, c in ipairs(self.manager:find('crate')) do
       g.rectangle('fill', c.body:getX()-SIZE/2, c.body:getY()-SIZE/2, SIZE, SIZE)
    end
+
+   self.effect_manager:draw()
 end
 
 function methods:update(dt) 
@@ -196,6 +201,7 @@ function methods:update(dt)
    self:max_speed(p.body, SIZE * 10)
    self.manager:cull()
    self.world:update(dt)
+   self.effect_manager:update(dt)
 end
 
 function methods:nudgeToSquare(body, sq, acc)
