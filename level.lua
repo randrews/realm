@@ -110,13 +110,17 @@ function methods:makeWalls()
 end
 
 function methods:makePlayer()
-   local b = love.physics.newBody(self.world, SIZE*1.5, SIZE*1.5, 'dynamic')
+   local player = self:find(function(m, pt) return m(pt) == '@' end)
+   assert(#player == 1, "Must be exactly 1 player start location")
+   player = player[1]
+
+   local b = love.physics.newBody(self.world, SIZE*(player.x + 0.5), SIZE*(player.y + 0.5), 'dynamic')
    b:setMass(1)
    local s = love.physics.newCircleShape(10)
 
-   local fix, player = self.manager:add(b, s, 'player')
+   local fix, player_entity = self.manager:add(b, s, 'player')
 
-   return player
+   return player_entity
 end
 
 function methods:draw()
