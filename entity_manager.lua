@@ -4,7 +4,7 @@ methods = {}
 
 function new(world)
    assert(world)
-   local tbl = {world=world}
+   local tbl = {world=world, needs_cull=false}
    setmetatable(tbl, {__index=methods})
    tbl:init()
    return tbl
@@ -31,6 +31,29 @@ function methods:add(body, shape, type)
    if not self.entities[type] then self.entities[type] = {} end
    table.insert(self.entities[type], t)
    return f, t
+end
+
+function methods:remove(entity)
+   entity.remove = true
+   self.needs_cull = true
+end
+
+function methods:cull()
+   if self.needs_cull then
+      self.needs_cull = false
+
+      for _, grp in pairs(self.entities) do
+         local n = 1
+         while n <= #grp do
+            if grp[n].remove then
+               grp[n].body:destroy()
+               table.remove(grp, n)
+            else
+               n = n + 1
+            end
+         end
+      end
+   end
 end
 
 function methods:find(type)

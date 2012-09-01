@@ -26,6 +26,7 @@ function methods:init()
    self.manager:handler('gem', 'player',
                         function(gem, player)
                            print(player.type .. ' got a gem!')
+                           self.manager:remove(gem)
                         end)
 
    self.manager:handler('gem', 'crate',
@@ -193,6 +194,7 @@ function methods:update(dt)
    end
 
    self:max_speed(p.body, SIZE * 10)
+   self.manager:cull()
    self.world:update(dt)
 end
 
