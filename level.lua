@@ -18,16 +18,18 @@ function methods:init()
    self.world = love.physics.newWorld(0, 0)
    self.manager = EntityManager.new(self.world)
    self.effect_manager = EffectManager.new()
+   self.gem_count = 0
 
    self:makeEdges()
    self:makeWalls()
    self:makeCrates()
    self:makeGems()
+   self.goal = self:makeGoal()
    self.player = self:makePlayer()
 
    self.manager:handler('gem', 'player',
                         function(gem, player)
-                           print(player.type .. ' got a gem!')
+                           self.player.gem_count = self.player.gem_count + 1
                            self.manager:remove(gem)
                            self.effect_manager:add(EffectManager.puff(gem.body:getX(), gem.body:getY(), gem.body:getAngle()))
                         end)
@@ -78,9 +80,12 @@ end
 
 function methods:makeGems()
    local ph = love.physics
+   self.gem_count = 0
 
    for p in self:each() do
       if self(p) == '*' then
+         self.gem_count = self.gem_count + 1
+
          local b = ph.newBody(self.world,
                               p.x*SIZE + SIZE/2,
                               p.y*SIZE + SIZE/2,
@@ -119,8 +124,25 @@ function methods:makePlayer()
    local s = love.physics.newCircleShape(10)
 
    local fix, player_entity = self.manager:add(b, s, 'player')
+   player_entity.gem_count = 0
 
    return player_entity
+end
+
+function methods:makeGoal()
+   local goal_loc = self:find(function(m,pt) return m(pt) == '&' end)
+   assert(#goal_loc == 1, "Must be exactly one goal")
+   goal_loc = goal_loc[1]
+
+   local ph = love.physics
+   local goal_blocker = ph.newBody(self.world,
+                                   goal_loc.x*SIZE+SIZE/2,
+                                   goal_loc.y*SIZE+SIZE/2,
+                                   'static')
+   local gb_shape = ph.newCircleShape(0, 0, SIZE/2*0.9)
+
+   local _, goal_entity = self.manager:add(goal_blocker, gb_shape, 'goal_blocker')
+   return goal_entity
 end
 
 function methods:draw()
@@ -154,6 +176,21 @@ function methods:draw()
    for _, c in ipairs(self.manager:find('crate')) do
       self:drawEntity(c)
    end
+
+   -- Draw goal
+   g.push()
+   g.translate(self.goal.body:getX(), self.goal.body:getY())
+   g.setColor(10, 70, 10)
+   g.circle('fill', 0, 0, self.goal.shape:getRadius())
+
+   if self.gem_count > 0 then
+      g.rotate(-math.pi/2)
+      g.setColor(40, 230, 40)
+      local a = math.pi * 2 * (self.player.gem_count / self.gem_count)
+      g.arc('fill', 0, 0, self.goal.shape:getRadius(), 0, a)
+   end
+
+   g.pop()
 
    self.effect_manager:draw()
 end
