@@ -66,7 +66,7 @@ function methods:makeCrates()
                               p.x*SIZE + SIZE/2,
                               p.y*SIZE + SIZE/2,
                               'dynamic')
-         local s = ph.newRectangleShape(0, 0, SIZE, SIZE)
+         local s = ph.newRectangleShape(SIZE*0.8, SIZE*0.8)
 
          b:setMass(5)
          b:setLinearDamping(SIZE / 2)
@@ -146,19 +146,28 @@ function methods:draw()
    -- Draw gems
    g.setColor(190, 190, 30)
    for _, gem in ipairs(self.manager:find('gem')) do
-      g.push()
-      g.translate(gem.body:getX(), gem.body:getY())
-      g.rotate(gem.body:getAngle())
-      g.rectangle('fill', -SIZE/4, -SIZE/4, SIZE/2, SIZE/2)
-      g.pop()
+      self:drawEntity(gem)
    end
 
+   -- Draw crates
    g.setColor(180, 120, 90)
    for _, c in ipairs(self.manager:find('crate')) do
-      g.rectangle('fill', c.body:getX()-SIZE/2, c.body:getY()-SIZE/2, SIZE, SIZE)
+      self:drawEntity(c)
    end
 
    self.effect_manager:draw()
+end
+
+-- Takes an entity with a rectangular shape and draws it
+function methods:drawEntity(e)
+   local g = love.graphics
+
+   g.push()
+   g.translate(e.body:getX(), e.body:getY())
+   g.rotate(e.body:getAngle())
+   local tlx, tly, brx, bry = e.shape:computeAABB(0, 0, 0)
+   g.rectangle('fill', tlx, tly, brx-tlx, bry-tly)
+   g.pop()
 end
 
 function methods:update(dt) 
