@@ -34,8 +34,10 @@ function methods:add(body, shape, type)
 end
 
 function methods:remove(entity)
-   entity.remove = true
-   self.needs_cull = true
+   if entity then
+      entity.remove = true
+      self.needs_cull = true
+   end
 end
 
 function methods:cull()

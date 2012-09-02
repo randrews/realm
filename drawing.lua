@@ -56,19 +56,23 @@ function drawEntity(e)
 end
 
 function drawGoal(self)
-   local g = love.graphics
+   local goal = self.manager:find('goal_blocker')[1]
 
-   g.push()
-   g.translate(self.goal.body:getX(), self.goal.body:getY())
-   g.setColor(10, 70, 10)
-   g.circle('fill', 0, 0, self.goal.shape:getRadius())
+   if goal then
+      local g = love.graphics
 
-   if self.gem_count > 0 then
-      g.rotate(-math.pi/2)
-      g.setColor(40, 230, 40)
-      local a = math.pi * 2 * (self.player.gem_count / self.gem_count)
-      g.arc('fill', 0, 0, self.goal.shape:getRadius(), 0, a)
+      g.push()
+      g.translate(goal.body:getX(), goal.body:getY())
+      g.setColor(10, 70, 10)
+      g.circle('fill', 0, 0, goal.shape:getRadius())
+
+      if self.gem_count > 0 then
+         g.rotate(-math.pi/2)
+         g.setColor(40, 230, 40)
+         local a = math.pi * 2 * (self.player.gem_count / self.gem_count)
+         g.arc('fill', 0, 0, goal.shape:getRadius(), 0, a)
+      end
+
+      g.pop()
    end
-
-   g.pop()
 end

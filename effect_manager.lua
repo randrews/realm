@@ -71,3 +71,25 @@ function Puff:draw()
    g.rectangle('fill', -s/2, -s/2, s, s)
    g.pop()
 end
+
+----------------------------------------
+
+local Fade = {
+   duration = 0.5
+}
+
+function fade(x, y)
+   return setmetatable({x=x,y=y,t=0}, {__index=Fade})
+end
+
+Fade.update = Puff.update
+
+function Fade:draw()
+   local g = love.graphics
+
+   g.push()
+   g.translate(self.x, self.y)
+   g.setColor(40, 230, 40, 255 * (self.duration - self.t))
+   g.circle('fill', 0, 0, 16)
+   g.pop()
+end

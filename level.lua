@@ -21,6 +21,7 @@ methods = setmetatable({}, {__index=Map.methods})
 mixin(methods, 'create_entities')
 mixin(methods, 'drawing')
 mixin(methods, 'physics')
+mixin(methods, 'handlers')
 
 function new(strs)
    local tbl = Map.new_from_strings(strs)
@@ -42,18 +43,5 @@ function methods:init()
    self.goal = self:makeGoal()
    self.player = self:makePlayer()
 
-   self.manager:handler('gem', 'player',
-                        function(gem, player)
-                           self.player.gem_count = self.player.gem_count + 1
-                           self.manager:remove(gem)
-                           self.effect_manager:add(EffectManager.puff(gem.body:getX(), gem.body:getY(), gem.body:getAngle()))
-                        end)
-
-   self.manager:handler('gem', 'crate',
-                        function(gem, crate)
-                           local f = SIZE * 15
-                           local dx = crate.body:getX() - gem.body:getX()
-                           local dy = crate.body:getY() - gem.body:getY()
-                           crate.body:applyForce(f*dx, f*dy)
-                        end)
+   self:addHandlers()
 end
