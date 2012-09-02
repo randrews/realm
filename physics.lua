@@ -1,7 +1,7 @@
 module(..., package.seeall)
 
 local SIZE = 32
-methods = {}
+local methods = _M
 
 function methods:update(dt) 
    local k = love.keyboard.isDown

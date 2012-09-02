@@ -6,23 +6,21 @@ local Map = require('map')
 local EntityManager = require('entity_manager')
 local EffectManager = require('effect_manager')
 
-function mixin(mod, mix)
+function mixin(mod, mix_name)
+   local mix = require(mix_name)
+
    for k, v in pairs(mix) do
-      if mod[k] then error("Name collision in mixin: " .. k)
+      if mod[k] and type(v) == 'function' then
+         error("Name collision mixing in " .. mix_name .. ": " .. k)
       else mod[k] = v end
    end
 end
 
 methods = setmetatable({}, {__index=Map.methods})
 
-local CreateEntities = require('create_entities')
-mixin(methods, CreateEntities.methods)
-
-local Drawing = require('drawing')
-mixin(methods, Drawing.methods)
-
-local Physics = require('physics')
-mixin(methods, Physics.methods)
+mixin(methods, 'create_entities')
+mixin(methods, 'drawing')
+mixin(methods, 'physics')
 
 function new(strs)
    local tbl = Map.new_from_strings(strs)
