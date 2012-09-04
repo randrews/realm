@@ -28,7 +28,7 @@ function methods:update(dt)
    local n = 1
    while n <= #effects do
       local e = effects[n]
-      e:update(dt)
+      e:update(dt, self)
       if e.finished then
          table.remove(effects, n)
       else
@@ -55,7 +55,7 @@ function puff(x, y, a)
    return setmetatable({x=x,y=y,a=a,t=0}, {__index=Puff})
 end
 
-function Puff:update(dt)
+function Puff:update(dt, effect_manager)
    self.t = self.t + dt
    self.finished = self.t >= self.duration
 end
@@ -82,7 +82,15 @@ function fade(x, y)
    return setmetatable({x=x,y=y,t=0}, {__index=Fade})
 end
 
-Fade.update = Puff.update
+function Fade:update(dt, effect_manager)
+   self.t = self.t + dt
+
+   self.finished = self.t >= self.duration
+
+   if self.finished then
+      effect_manager:add(vortex(self.x, self.y))
+   end
+end                     
 
 function Fade:draw()
    local g = love.graphics
@@ -92,4 +100,42 @@ function Fade:draw()
    g.setColor(40, 230, 40, 255 * (self.duration - self.t))
    g.circle('fill', 0, 0, 16)
    g.pop()
+end
+
+----------------------------------------
+
+local Vortex = {
+   particle = love.graphics.newImage('particle.png')
+}
+
+function vortex(x, y)
+   local p = love.graphics.newParticleSystem(Vortex.particle, 1000)
+   local t = {x=x, y=y, particles = p}
+   
+   p:setColors(
+      math.floor(0.22*255), math.floor(0.85*255), math.floor(0.22*255), 0, -- start
+      math.floor(0.22*255), math.floor(0.85*255), math.floor(0.22*255), 255, -- start
+      math.floor(0.22*255), math.floor(0.85*255), math.floor(0.22*255), 0
+   )
+
+   p:setLifetime(-1)
+
+   p:setEmissionRate(60)
+   p:setParticleLife(0.7, 1)
+   p:setSizes(3, 0)
+
+   p:setSpin(2)
+   p:setRotation(0, math.pi*2)
+
+   p:start()
+
+   return setmetatable(t, {__index=Vortex})
+end
+
+function Vortex:update(dt)
+   self.particles:update(dt)
+end
+
+function Vortex:draw()
+   love.graphics.draw(self.particles, self.x, self.y)
 end
