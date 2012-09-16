@@ -10,6 +10,16 @@ function methods:draw()
    g.setColor(64, 120, 64)
    g.rectangle('fill', 0, 0, self.width*SIZE, self.height*SIZE)
 
+   -- Message markers
+   local lw = g.getLineWidth()
+   g.setColor(80, 110, 240)
+   g.setLineWidth(3)
+   for pt, msg in pairs(self.messages) do
+      pt = pt * SIZE + point(SIZE/2, SIZE/2)
+      g.circle('line', pt.x, pt.y, SIZE/2*0.8)
+   end
+   g.setLineWidth(lw)
+
    -- Draw player
    g.setColor(160, 64, 64)
    g.circle('fill',
@@ -38,10 +48,41 @@ function methods:draw()
    -- Draw goal
    drawGoal(self)
 
+   -- Message boxes
+   local plyr = point(self.player.body:getX(), self.player.body:getY())
+   
+   for pt, msg in pairs(self.messages) do
+      pt = pt * SIZE + point(SIZE/2, SIZE/2)
+      local d = pt:dist(plyr)
+      if d <= SIZE*2 then
+         drawMessageBox(pt + point(msg.dx, msg.dy),
+                        msg[1],
+                        (SIZE*2-d) / (SIZE*2) * 255)
+      end
+   end
+
    self.effect_manager:draw()
 end
 
 ------------------------------------------------------------
+
+function messageSize(msg)
+   local font = love.graphics.getFont()
+   local w, l = font:getWrap(msg, 1000)
+   return w, l*font:getHeight()
+end
+
+function drawMessageBox(topleft, msg, opacity)
+   local g = love.graphics
+   local w, h = messageSize(msg)
+
+   g.setColor(80, 110, 240, opacity)
+   g.rectangle('fill', topleft.x, topleft.y,
+               w+20, h+20)
+
+   g.setColor(255, 255, 255, opacity)
+   g.print(msg, topleft.x+10, topleft.y+10)
+end
 
 -- Takes an entity with a rectangular shape and draws it
 function drawEntity(e)

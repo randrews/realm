@@ -7,7 +7,7 @@ love.physics.setMeter(32)
 
 local level = Level.new{
    "..........######.........",
-   "..........#..............",
+   "....A.....#..............",
    "..........#.#............",
    ".....######.#......o.....",
    "............#......o.....",
@@ -19,12 +19,20 @@ local level = Level.new{
    ".....#...#.......##.#....",
    "...#...#...#........#....",
    ".....#...#...............",
-   ".........................",
+   "....................B....",
    ".*********...............",
-   "........................."
+   ".........................",
+
+   A={"This\nis a message",
+      dx=50, dy=0}, -- Delta from center of marker to top-left of box.
+
+   B={"This is also a message",
+      dx=-200, dy=0}
 }
 
 function love.load()
+   local font = love.graphics.newFont(12)
+   love.graphics.setFont(font)
    math.randomseed(os.time())
 end
 

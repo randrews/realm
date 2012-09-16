@@ -104,3 +104,13 @@ function methods:makeGoal()
    local _, goal_entity = self.manager:add(goal_blocker, gb_shape, 'goal_blocker')
    return goal_entity
 end
+
+function methods:makeSpecials(specials)
+   for p in self:each() do
+      local c = self(p)
+
+      if c >= 'A' and c <= 'Z' then
+         self.messages[p] = specials[c]
+      end
+   end
+end

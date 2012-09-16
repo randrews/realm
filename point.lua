@@ -44,6 +44,18 @@ function methods:adjacent(pt2)
    return (d.x == 0 or d.y == 0) and (math.abs(d.x+d.y) == 1)
 end
 
+-- With one arg: returns the distance to pt2
+-- With two args: returns whether the distance is less than or equal to the 2nd arg
+function methods:dist(pt2, max)
+   assert(pt2)
+   local d = (self - pt2) * (self - pt2)
+   if max then
+      return (d.x+d.y) <= max*max
+   else
+      return math.sqrt(d.x + d.y)
+   end
+end
+
 function instance.__add(pt1, pt2)
    assert(pt1 and pt2)
    return new(pt1.x+pt2.x, pt1.y+pt2.y)

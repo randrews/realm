@@ -24,22 +24,36 @@ mixin(methods, 'physics')
 mixin(methods, 'handlers')
 
 function new(strs)
-   local tbl = Map.new_from_strings(strs)
+   -- All the numeric indices, to map
+   local m = {}
+   for _,r in ipairs(strs) do m[#m+1] = r end
+
+   -- All str indices, to specials
+   local specials = {}
+   for k,v in pairs(strs) do
+      if type(k) ~= 'number' then specials[k]=v end
+   end
+
+   local tbl = Map.new_from_strings(m)
    getmetatable(tbl).__index = methods
-   tbl:init()
+   tbl:init(specials)
    return tbl
 end
 
-function methods:init()
+function methods:init(specials)
    self.world = love.physics.newWorld(0, 0)
    self.manager = EntityManager.new(self.world)
    self.effect_manager = EffectManager.new()
    self.gem_count = 0
 
+   self.messages = {} -- Map from point to msg structure
+   -- A message looks like: {"text", dx=1, dy=2}
+
    self:makeEdges()
    self:makeWalls()
    self:makeCrates()
    self:makeGems()
+   self:makeSpecials(specials)
    self.goal = self:makeGoal()
    self.player = self:makePlayer()
 
