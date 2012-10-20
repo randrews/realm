@@ -109,7 +109,7 @@ function methods:makeSpecials(specials)
    for p in self:each() do
       local c = self(p)
 
-      if c >= 'A' and c <= 'Z' then
+      if c >= '0' and c <= '9' then
          self.messages[p] = specials[c]
       end
    end
