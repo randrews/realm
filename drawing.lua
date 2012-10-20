@@ -61,6 +61,15 @@ function methods:draw()
       end
    end
 
+   -- Enemies
+   
+   -- Draw player
+   for _, enemy in ipairs(self.enemies) do
+      g.setColor(80, 70, 20)
+      g.circle('fill',
+               enemy.entity.body:getX(), enemy.entity.body:getY(), 15)
+   end
+
    self.effect_manager:draw()
 end
 

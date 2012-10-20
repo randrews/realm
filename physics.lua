@@ -44,6 +44,10 @@ function methods:update(dt)
       nudgeToSquare(c.body, sq, SIZE)
    end
 
+   for _, e in ipairs(self.enemies) do
+      e:update(dt)
+   end
+
    max_speed(p.body, SIZE * 10)
    self.manager:cull()
    self.world:update(dt)

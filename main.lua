@@ -1,5 +1,6 @@
 assert(love, "Run this inside Love")
 
+inspect = dofile 'inspect.lua'
 local Level = require('level')
 local point = require('point')
 
@@ -19,7 +20,7 @@ local level = Level.new{
    ".....#...#.......##.#....",
    "...#...#...#........#....",
    ".....#...#...............",
-   "....................2....",
+   "...A................2....",
    ".*********...............",
    ".........................",
 
@@ -27,7 +28,12 @@ local level = Level.new{
       dx=50, dy=0}, -- Delta from center of marker to top-left of box.
 
    ["2"]={"This is also a message",
-      dx=-200, dy=0}
+      dx=-200, dy=0},
+
+   A={
+      6, 13, -- Waypoint coords
+      3, 13
+   }
 }
 
 function love.load()

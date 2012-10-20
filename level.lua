@@ -49,6 +49,8 @@ function methods:init(specials)
    self.messages = {} -- Map from point to msg structure
    -- A message looks like: {"text", dx=1, dy=2}
 
+   self.enemies = {} -- Array of Enemies
+
    self:makeEdges()
    self:makeWalls()
    self:makeCrates()

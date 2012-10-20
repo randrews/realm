@@ -1,3 +1,5 @@
+local Enemy = require 'enemy'
+
 module(..., package.seeall)
 
 local SIZE = 32
@@ -111,6 +113,9 @@ function methods:makeSpecials(specials)
 
       if c >= '0' and c <= '9' then
          self.messages[p] = specials[c]
+
+      elseif c >= 'A' and c <= 'Z' then
+         table.insert(self.enemies, Enemy.new(p, self, specials[c]))
       end
    end
 end

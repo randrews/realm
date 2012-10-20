@@ -56,6 +56,18 @@ function methods:dist(pt2, max)
    end
 end
 
+-- Length of a line from (0,0) to self
+function methods:length()
+   return math.sqrt((self.x * self.x) + (self.y * self.y))
+end
+
+methods.magnitude = methods.length
+
+-- Return a point with the same direction as self, but length 1
+function methods:normal()
+   return self / self:length()
+end
+
 function instance.__add(pt1, pt2)
    assert(pt1 and pt2)
    return new(pt1.x+pt2.x, pt1.y+pt2.y)
@@ -72,6 +84,15 @@ function instance.__mul(pt1, pt2)
       return new(pt1.x * pt2, pt1.y * pt2)
    else
       return new(pt1.x*pt2.x, pt1.y*pt2.y)
+   end
+end
+
+function instance.__div(pt1, pt2)
+   assert(pt1 and pt2)
+   if type(pt2) == 'number' then
+      return new(pt1.x / pt2, pt1.y / pt2)
+   else
+      return new(pt1.x/pt2.x, pt1.y/pt2.y)
    end
 end
 
