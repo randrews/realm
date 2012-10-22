@@ -108,6 +108,8 @@ function methods:makeGoal()
 end
 
 function methods:makeSpecials(specials)
+   local waypoints = {}
+
    for p in self:each() do
       local c = self(p)
 
@@ -115,7 +117,19 @@ function methods:makeSpecials(specials)
          self.messages[p] = specials[c]
 
       elseif c >= 'A' and c <= 'Z' then
-         table.insert(self.enemies, Enemy.new(p, self, specials[c]))
+         waypoints[c] = p
       end
+   end
+
+   for _, path in ipairs(specials.enemies) do
+      local pts = {}
+
+      for n=1, #path do
+         local c = path:sub(n,n)
+         assert(waypoints[c])
+         pts[n] = waypoints[c] * SIZE + point(SIZE/2, SIZE/2)
+      end
+
+      table.insert(self.enemies, Enemy.new(self, pts))
    end
 end

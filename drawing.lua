@@ -48,6 +48,13 @@ function methods:draw()
    -- Draw goal
    drawGoal(self)
 
+   -- Enemies
+   for _, enemy in ipairs(self.enemies) do
+      g.setColor(80, 70, 20)
+      g.circle('fill',
+               enemy.entity.body:getX(), enemy.entity.body:getY(), 15)
+   end
+
    -- Message boxes
    local plyr = point(self.player.body:getX(), self.player.body:getY())
    
@@ -59,15 +66,6 @@ function methods:draw()
                         msg[1],
                         (SIZE*2-d) / (SIZE*2) * 255)
       end
-   end
-
-   -- Enemies
-   
-   -- Draw player
-   for _, enemy in ipairs(self.enemies) do
-      g.setColor(80, 70, 20)
-      g.circle('fill',
-               enemy.entity.body:getX(), enemy.entity.body:getY(), 15)
    end
 
    self.effect_manager:draw()

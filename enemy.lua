@@ -3,23 +3,19 @@ module(..., package.seeall)
 local SIZE = 32
 local instance = {}
 
-function new(start, level, opts)
+function new(level, path)
    local e = {}
    setmetatable(e, {__index=instance})
 
-   e.path = {}
-   e.destination_idx = 1
+   e.path = path
+   e.destination_idx = 2
    e.speed = SIZE * 2
 
-   assert(#opts%2==0)
-   for n = 1, #opts do
-      if n%2==1 then
-         table.insert(e.path, point(opts[n]*SIZE, opts[n+1]*SIZE) + point(SIZE/2, SIZE/2))
-      end
-   end
+   assert(#e.path > 0)
+   local start = e.path[1]
 
    local b = love.physics.newBody(level.world,
-                                 SIZE*(start.x + 0.5), SIZE*(start.y + 0.5),
+                                 start.x, start.y,
                                  'kinematic')
    local s = love.physics.newCircleShape(15)
    local _, entity = level.manager:add(b, s, 'enemy')
@@ -29,6 +25,8 @@ function new(start, level, opts)
 end
 
 function instance:update(dt)
+   if self.destination_idx > #self.path then return end
+
    local loc = point(self.entity.body:getPosition())
    local dest = self.path[self.destination_idx]
    local delta = dest - loc
