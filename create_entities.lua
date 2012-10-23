@@ -103,7 +103,15 @@ function methods:makeGoal()
                                    'static')
    local gb_shape = ph.newCircleShape(0, 0, SIZE/2*0.9)
 
+   local goal = ph.newBody(self.world,
+                           goal_loc.x*SIZE+SIZE/2,
+                           goal_loc.y*SIZE+SIZE/2,
+                           'static')
+   local g_shape = ph.newCircleShape(0, 0, SIZE/2*0.8)
+
+   self.manager:add(goal, g_shape, 'goal')
    local _, goal_entity = self.manager:add(goal_blocker, gb_shape, 'goal_blocker')
+
    return goal_entity
 end
 

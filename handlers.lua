@@ -16,6 +16,8 @@ function methods:addHandlers()
 
    self.manager:handler('gem', 'player', take_gem)
    self.manager:handler('gem', 'crate', pushback_crate)
+   self.manager:handler('player', 'enemy', kill_player)
+   self.manager:handler('player', 'goal', end_level)
 end
 
 ------------------------------------------------------------
@@ -42,4 +44,12 @@ function open_goal()
       entity_manager:remove(goal)
       effect_manager:add(EffectManager.fade(goal.body:getX(), goal.body:getY()))
    end
+end
+
+function kill_player(player, enemy)
+   print("Player died")
+end
+
+function end_level(player, goal)
+   print("Next level")
 end
